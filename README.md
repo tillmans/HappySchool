@@ -1,2 +1,2 @@
 # HappySchool
-we record the baby in kidgarden everything
+we record the baby in kidgarden funny thing
