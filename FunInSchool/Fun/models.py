@@ -61,9 +61,17 @@ class Parents_Kid(Model):
 
     class Meta:
 	db_table = 'Parents_Kid'
+
+GENDER_CHOICES=(
+    (u'B','boy'), #0
+    (u'G','girl'), #1
+)
  
 class Kid(Model):
     name= CharField(max_length=20)  
+    age = TinyIntField(3)
+    gender = TinyIntField(2)
+    head_shot = ForeighKey(Photo)
     teacherlist = ManyToManyField(Teacher,through = 'Teacher_Kid')
     parentslist = ManyToManyField(Parents,through = 'Parents_Kid')
     photolist = ManyToManyField(Photo,through = 'Photo_Kid')
