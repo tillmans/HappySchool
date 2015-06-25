@@ -9,44 +9,58 @@ class Teacher(Model):
     user_name = CharField(max_length=20)
     real_name = CharField(max_length=20)
     address = CharField(max_length = 250)
-    kindergarten_id = ForeignKey(Kindergarten)
-    teacher_kid_list = ManyToManyField(Kid,through = 'Teacher_Kid')
+    school = ForeignKey(School)
+    kid = ManyToManyField(Kid)
     email = CharField(max_length = 250)
     telephone = CharField(max_length=20)
+    gender = IntegerField(2)
+    age = IntegerField(3)
+    head_portrait = ImageField(upload_to='portrait')
+    gmt_create = DateTimeField(auto_now_add = True)
+    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
         ordering=['user_name']
         db_table='teacher'
+	order_with_respect_to = 'school'
 
     def __unicode__(self):
         return self.user_name
 
-class Teacher_Kid(Model):
-    teacher = ForeignKey(Teacher) 
-    kid = ForeignKey(Kid)
+
+class School(Model):
+    name = CharField(max_length=20,unique = True)
+    address = TextField(unique = True)
+    #description_txt = TextField()
+    principal_telephone = CharField(max_length = 20)
+    principal_email = CharField(max_length = 250)
+    gmt_create = DateTimeField(auto_now_add = True)
+    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
-        db_table = 'Teacher_Kid'
-    
-
-class Kindergarten(Model):
-    name = CharField(max_length=20)
-    address = TextField()
-
-    class Meta:
-        db_table = 'kindergarten'
+        db_table = 'school'
         ordering=['name']
 
     def __unicode__(self):
         return self.name
 
+GENDER_CHOICES_PARENT=(
+    (u'M','male'),
+    (u'F','feimale')
+)
+
 class Parents(Model):
     user_name= CharField(max_length=20)  
     real_name= CharField(max_length=20)  
     address = CharField(max_length = 250)
-    kidList = ManyToManyField(Kid,through='Parents_Kid')
+    kid = ManyToManyField(Kid)
     email = CharField(max_length = 250)
     telephone = CharField(max_length=20)
+    gender = CharField(max_length=1,choices=GENDER_CHOICES_PARENT)
+    age = IntegerField(3)
+    head_portrait = ImageField(upload_to='portrait')
+    gmt_create = DateTimeField(auto_now_add = True)
+    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
         db_table = 'parents'
@@ -55,12 +69,6 @@ class Parents(Model):
     def __unicode__(self):
         return self.user_name
 
-class Parents_Kid(Model):
-    parents = ForeignKey(Teacher) 
-    kid = ForeignKey(Kid)
-
-    class Meta:
-        db_table = 'Parents_Kid'
 
 GENDER_CHOICES=(
     (u'B','boy'), #0
@@ -70,11 +78,11 @@ GENDER_CHOICES=(
 class Kid(Model):
     name= CharField(max_length=20)  
     age = IntegerField(3)
-    gender = IntegerField(2)
-    head_shot = ImageField(upload_to='photos')
-    teacherlist = ManyToManyField(Teacher,through = 'Teacher_Kid')
-    parentslist = ManyToManyField(Parents,through = 'Parents_Kid')
-    photolist = ManyToManyField(Photo,through = 'Photo_Kid')
+    gender = CharField(max_length=1,choices = GENDER_CHOICES)
+    head_portrait = ImageField(upload_to='portrait')
+    moment = ManyToManyField(Moment)
+    gmt_create = DateTimeField(auto_now_add = True)
+    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
         db_table = 'Kid'
@@ -83,15 +91,18 @@ class Kid(Model):
     def __unicode__(self):
         return self.name
 
-class Photo(Model):
+class Moment(Model):
     title = CharField(max_length = 250)
     description = TextField()
-    kidlist = ManyToManyField(Kid,through = 'Photo_Kid')
-    image = ImageField(upload_to='photos') 
+    kid = ManyToManyField(Kid)
+    image = ImageField(upload_to='moments') 
+    gmt_create = DateTimeField(auto_now_add = True)
+    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
-        db_table = 'photo'
+        db_table = 'moment'
         ordering = ['title']
+
     def __unicode__(self):
         return self.title
 
