@@ -87,8 +87,6 @@ DATABASES = {
 	'PASSWORD': 'happyschooldb@heros',
     }
 }
-    }
-}
 
 
 # Password validation
@@ -113,9 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
-LANGUAGE_CODE = 'Asia/ShangHai'
+LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -161,7 +159,7 @@ LOGGING = {
         'error': {
             'level':'ERROR',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': '/root/mycode/HapplySchool/log/error.log',
+            'filename': '/root/mycode/HappySchool/log/error.log',
             'maxBytes':1024*1024*5,
             'backupCount': 5,
             'formatter':'standard',
