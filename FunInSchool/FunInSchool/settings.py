@@ -74,8 +74,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'FunInSchool.wsgi.application'
 
-EMAIL_HOST='smtp.gmail.com'
-EMAIL_HOST_USER='tillman.zhang@gmail.com'
+EMAIL_HOST='smtp.163.com'
+EMAIL_HOST_USER='tju.zk@163.com'
 EMAIL_HOST_PASSWORD='SCzy641322'
 EMAIL_USE_TLS = True
 

@@ -5,6 +5,7 @@ import hashlib
 
 from models import Province,City,District,School,Class,SchoolAdministrator,Teacher,Parents,Kid,Moment,Parent,ParentGroup
 from FunInSchool.settings import logging
+from django.core.mail import send_mail
 
 log = logging.getLogger('fun_app')
 
@@ -192,6 +193,7 @@ def checkemail(email):
     return False
 
 def registerSchoolAdministator(request):
+    #学校管理权限较大，注册为学校管理员时需要有控制机制
     r,out= checkNecessaryParams(request,'name','telephone','email','passwd')
     if r:
 	return InvalidUrl(out)
@@ -259,7 +261,6 @@ def createClass(request):
     result = '成功创建班级:%s 学校:%s 学校负责人:%s' % (out['name'],out['school_name'],sa.name)
     return RightResponse(result)
 
-
 def registerTeacher(request):
     #假设同一个区域的学校名字不重复
     r,out = checkNecessaryParams(request,'provice','city','district','school_name','telephone','email','class_name','name')
@@ -286,9 +287,62 @@ def registerTeacher(request):
     tea.save() 
     class_id.add(tea)
     class_id.save()
-    result = '成功注册老师到班级:%s 老师名字:%s 联系电话:%s 邮箱地址:%s,目前由学校管理员审核中' % (out['class_name'],out['name'],out['telephone'],out['email'])
     tea.status='EI'
     #发送url给学校管理员的邮箱对新注册的老师进行审核
-     
+    url_yes=''
+    url_no=''
+    mail_title = '幼儿园教师注册审核'
+    mail_content = '教师%s 头像预留正在注册为你的学校%s的教师，请点击下面链接确认是否同意:\n\t同意链接:%s，拒绝链接:%s' % (out['name'],out['school_name'],url_yes,url_no)
+    from_mail = 'tju.zk@163.com'
+    to_mail = ['tju.zk@163.com']
+    #这里需要考虑发送邮件失败的情况，目前暂时未处理
+    send_mail(mail_title,mail_content,from_mail,to_mail,fail_silently = False)
+    
+    tea.status='EI'
+    tea.save() 
+    result = '成功注册老师到班级:%s 老师名字:%s 联系电话:%s 邮箱地址:%s,目前由学校管理员审核中' % (out['class_name'],out['name'],out['telephone'],out['email'])
     return RightResponse(result)
 
+def OnPassTeacherRegister(request):
+    #修改教师状态为审核通过
+    pass
+
+def OnRejectTeacherRegister(request):
+   #从数据库中删除该教师信息 
+   pass
+
+def UpdateTeacherInfo(requst):
+    #更新教师个人信息
+    #将request中教师的信息与数据库中的信息逐个做比较，更新有差异的条目
+
+def createKid(request):
+    #假设同一个区域的学校名字不重复
+    #教师创建kid
+    pass
+
+def updateKid(request):
+    pass
+
+def queryKid(request):
+    #读取kid的信息
+    pass
+
+def deleteKid(request):
+    #删除kid
+    pass
+
+def registerParents(request):
+    #注册家长
+    pass
+
+def updateParents(request):
+    #更新家长的信息
+    pass
+
+def queryParents(request):
+    #获取家长的信息
+    pass
+
+def deleteParents(request):
+    #删除家长的信息
+    pass

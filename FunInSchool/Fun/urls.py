@@ -1,6 +1,6 @@
 from django.conf.urls import url,patterns
 from django.views.generic import TemplateView
-from photo import settings
+from FunInSchool import settings
 
 urlpatterns = patterns('Fun.views',
     url(r'^$','index',name='index'),
