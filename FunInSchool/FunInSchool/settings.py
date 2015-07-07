@@ -74,6 +74,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'FunInSchool.wsgi.application'
 
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST_USER='tillman.zhang@gmail.com'
+EMAIL_HOST_PASSWORD='SCzy641322'
+EMAIL_USE_TLS = True
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases

@@ -4,7 +4,7 @@ import base64,urllib,urllib2,sys,re,json,random,time
 import hashlib
 
 from models import Province,City,District,School,Class,SchoolAdministrator,Teacher,Parents,Kid,Moment,Parent,ParentGroup
-from photo.settings import logging
+from FunInSchool.settings import logging
 
 log = logging.getLogger('fun_app')
 
@@ -141,10 +141,22 @@ def getSchoolAdministratorInfo(request):
 	return InvalidUrl(out)
     sa = SchoolAdministrator.objects.get(telephone = out['telephone'])
     result = {}  
-    result[]
+    result['name'] = sa.name
+    result['telephone'] = sa.telephone
+    result['email'] = sa.email
+    result = json.dumps(result)
+    return RightResponse(result)
 
 def updateSchoolAdministratorPassword(request):
-    r,out = checkNecessaryParams(request,'telephone')
+    r,out = checkNecessaryParams(request,'telephone','passwd')
+    if r:
+	return InvalidUrl(out)
+    sa = SchoolAdministrator.objects.get(telephone = out['telephone'])
+    hash_passwd = hashlib(out['passwd']).hexdigest()
+    sa.passwd = hash_passwd
+    sa.save()
+    result="succeeded to update %s's password" % (sa.name)
+    return RightResponse(result)
 
 def updateTeacherPassword(request):
     pass
@@ -190,65 +202,93 @@ def registerSchoolAdministator(request):
     return RightResponse(result)
 
 def createSchool(request):
-    try:
-	province_name = request.POST.get('province').strip(' ')
-	city_name = request.POST.get('city').strip(' ')
-	district_name = request.POST.GET('district').strip(' ')
-	telephone = request.POST.get('telephone').strip(' ')
-	school_name = request.POST.get('schol_name').strip(' ')
-    except KeyError,e:
-	errorMsg = '缺少某些必选参数'.decode('gbk').encode('utf8')
-	return InvalidUrl(errorMsg)
-    if province_name and city_name or district_name or owner_name or owner_telephone or owner_email or school_name:
-	pass
-    else
-	errorMsg = '无效的省份或者城市或者区的名字'.decode('gbk').encode('utf8')
+    r,out = checkNecessaryParams(request,'province','city','district','telephone','school_name','address')
+    if r:
 	return InvalidUrl(errorMsg)
 
-    district = City.objects.filter(province__name = province_name).filter(name=city_name).filter(districts__name=district_name)
-    if not district.exists():
-	errorMsg='无法在%s %s找到%s' % (province_name,city_name,district_name)
+    try:
+	district = City.objects.filter(province__name = out['province']).filter(name=out['city']).filter(districts__name=out['district'])
+    except DoesNotExist,e:
+	errorMsg='无法在%s %s找到%s,%s' % (out['province'],out['city'],out['district'],e)
 	return InvalidUrl(errorMsg)
-    principal = Principal.objects.create(name=owner_name,telephone = owner_telephone,email = owner_email)
-    principal.save()
-    school = School.objects.create(name=school_name)
-    school.add(principal)
+    #检查是否是学校管理员电话 
+    try:
+	sa = SchoolAdministrator.objects.get(telephone = out[telephone])
+    except DoesNotExist,e:
+	errorMsg='the current user is not a school administrator,only school administrators can create school'
+	return InvalidUrl(errorMsg)
+    school = School(address = out['address'],name = out['school_name'])
     school.save()
-    district.school_set.add(school)
-    district.save() 
-    result = '成功注册学校:%s 责任人名字:%s 联系电话:%s 邮箱地址:%s' % (school_name,owner_name,owner_telephone,owner_email)
+    try:
+	district.add(school)
+	sa.add(school)
+    except:
+	errorMsg = 'can not add the current school to %s or %s' % (district.name,sa.name)
+	return InvalidUrl(errorMsg)
+	
+    result = '成功注册学校:%s 责任人名字:%s 地区:%s' % (out['school_name'],sa.name,district.name)
     return RightResponse(result)
+
+def createClass(request):
+    r,out = checkNecessaryParams(request,'province','city','district','telephone','school_name','name')
+    if r:
+	return InvalidUrl(errorMsg)
+
+    try:
+	district = City.objects.filter(province__name = out['province']).filter(name=out['city']).filter(districts__name=out['district'])
+    except DoesNotExist,e:
+	errorMsg='无法在%s %s找到%s,%s' % (out['province'],out['city'],out['district'],e)
+	return InvalidUrl(errorMsg)
+
+    #检查是否是学校管理员电话 
+    try:
+	sa = SchoolAdministrator.objects.get(telephone = out[telephone])
+    except DoesNotExist,e:
+	errorMsg='the current user is not a school administrator,only school administrators can create school'
+	return InvalidUrl(errorMsg)
+
+    try:
+	school = district.school_set.get(school__name = out['school_name'])
+    except DoesNotExist,e:
+	errorMsg='can not find school %s in district %s' % (out['school_name'],out['district'])
+	return InvalidUrl(errorMsg)
+    school_class = Class(name = out['name'])
+    school_class.save() 
+    school.add(school_class)
+    school.save()	
+    result = '成功创建班级:%s 学校:%s 学校负责人:%s' % (out['name'],out['school_name'],sa.name)
+    return RightResponse(result)
+
 
 def registerTeacher(request):
+    #假设同一个区域的学校名字不重复
+    r,out = checkNecessaryParams(request,'provice','city','district','school_name','telephone','email','class_name','name')
+    if r:
+	return InvalidUrl(out)
     try:
-	province_name = request.POST.get('province').strip(' ')
-	city_name = request.POST.get('city').strip(' ')
-	district_name = request.POST.GET('district').strip(' ')
-	owner_name = request.POST.get('principal_name').strip(' ')
-	owner_telephone = request.POST.get('telephone').strip(' ')
-	owner_email = request.POST.get('email').strip(' ')
-	school_name = request.POST.get('schol_name').strip(' ')
-    except KeyError,e:
-	errorMsg = '缺少某些必选参数'.decode('gbk').encode('utf8')
+	district = City.objects.filter(province__name = province_name).filter(name=city_name).filter(districts__name=district_name)
+    except DoesNotExist,e:
+	errorMsg='无法在%s %s找到%s,%s' % (province_name,city_name,district_name,e)
 	return InvalidUrl(errorMsg)
-    if province_name and city_name or district_name or owner_name or owner_telephone or owner_email or school_name:
-	pass
-    else
-	errorMsg = '无效的省份或者城市或者区的名字'.decode('gbk').encode('utf8')
+    try:
+	school = district.filter(school__name=out['school_name'])
+    except DoesNotExist,e:
+	errorMsg = "can not find school %s in %s" % (out['school_name'],out['district'])
 	return InvalidUrl(errorMsg)
 
-    district = City.objects.filter(province__name = province_name).filter(name=city_name).filter(districts__name=district_name)
-    if not district.exists():
-	errorMsg='无法在%s %s找到%s' % (province_name,city_name,district_name)
+    try:
+	class_id = school.filter(class__name=out['class_name'])
+    except DoesNotExist,e:
+	errorMsg = "can not find class %s in school %s" % (out['class_name'],out['school_name'])
 	return InvalidUrl(errorMsg)
-    principal = Principal.objects.create(name=owner_name,telephone = owner_telephone,email = owner_email)
-    principal.save()
-    school = School.objects.create(name=school_name)
-    school.add(principal)
-    school.save()
-    district.school_set.add(school)
-    district.save() 
-    result = '成功注册学校:%s 责任人名字:%s 联系电话:%s 邮箱地址:%s' % (school_name,owner_name,owner_telephone,owner_email)
+
+    tea = Teacher(name=out['name'],telephone=out['telephone'],email = out['email'],status='NE') 
+    tea.save() 
+    class_id.add(tea)
+    class_id.save()
+    result = '成功注册老师到班级:%s 老师名字:%s 联系电话:%s 邮箱地址:%s,目前由学校管理员审核中' % (out['class_name'],out['name'],out['telephone'],out['email'])
+    tea.status='EI'
+    #发送url给学校管理员的邮箱对新注册的老师进行审核
+     
     return RightResponse(result)
-
 

@@ -43,8 +43,6 @@ class SchoolAdministator(Model):
     gmt_modify = DateTimeField(auto_now_add = True)
     passwd =  CharField(max_length = 250)
     #school = ForeignKey(School)
-    gmt_create = DateTimeField(auto_now_add = True)
-    gmt_modify = DateTimeField(auto_now_add = True)
 
     class Meta:
         db_table = 'schooladministator'
@@ -55,7 +53,6 @@ class SchoolAdministator(Model):
 
 
 class School(Model):
-    name = CharField(max_length=20,unique = True)
     address = CharField(max_length = 250,unique = True)
     #province = CharField(max_length = 20)
     #city = CharField(max_length = 20)
@@ -97,6 +94,13 @@ ADULT_GENDER=(
     (u'f','女')
 )
 
+TEACHER_STATUS=(
+    (u'EP','审核通过'),
+    (u'EF','审核未通过'),
+    (u'EI','审核中'),
+    (u'NE','未审核')
+)
+
 class Teacher(Model):
     name = CharField(max_length=20)
     class_id = ForeignKey(Class)
@@ -106,6 +110,7 @@ class Teacher(Model):
     age = IntegerField(3)
     head_portrait = ImageField(upload_to='portrait')
     passwd = CharField(max_length = 250)
+    status = CharField(max_length = 2,choices = TEACHER_STATUS)
     gmt_create = DateTimeField(auto_now_add = True)
     gmt_modify = DateTimeField(auto_now_add = True)
 
