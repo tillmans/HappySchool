@@ -42,6 +42,7 @@ class SchoolAdministator(Model):
     gmt_create = DateTimeField(auto_now_add = True)
     gmt_modify = DateTimeField(auto_now_add = True)
     passwd =  CharField(max_length = 250)
+    id_card = CharField('身份证号码',max_length = 20,unique = True)
     #school = ForeignKey(School)
 
     class Meta:
@@ -52,6 +53,14 @@ class SchoolAdministator(Model):
         return self.name
 
 
+SCHOOL_STATUS=(
+    (u'EP','审核通过'),
+    (u'EF','审核未通过'),
+    (u'EI','审核中'),
+    (u'NE','未审核')
+)
+
+
 class School(Model):
     address = CharField(max_length = 250,unique = True)
     #province = CharField(max_length = 20)
@@ -60,7 +69,7 @@ class School(Model):
     school_admin = OneToOneField(SchoolAdministator)
     district = ForeignKey(District)
     name = CharField(max_length = 50)
-
+    status = CharField('学校状态',max_length = 2,choices = SCHOOL_STATUS)
     gmt_create = DateTimeField(auto_now_add = True)
     gmt_modify = DateTimeField(auto_now_add = True)
 

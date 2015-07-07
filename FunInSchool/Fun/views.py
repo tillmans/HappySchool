@@ -192,16 +192,29 @@ def checkemail(email):
 	return True
     return False
 
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def registerSchoolAdministator(request):
     #学校管理权限较大，注册为学校管理员时需要有控制机制
-    r,out= checkNecessaryParams(request,'name','telephone','email','passwd')
+    r,out= checkNecessaryParams(request,'name','telephone','email','passwd','id_card')
     if r:
 	return InvalidUrl(out)
     passwd_hash = hashlib(out['passwd']).hexdigest()
-    school_admin = SchoolAdministrator.objects.create(name=out['name'],telephone = out['telephone'],email = name['email'],passwd = passwd_hash)
+    school_admin = SchoolAdministrator.objects.create(name=out['name'],telephone = out['telephone'],email = name['email'],passwd = passwd_hash,id_card=out['id_card'])
     school_admin.save()
     result = '成功注册学校管理员,名字:%s 联系电话:%s 邮箱地址:%s' % (owner_name,owner_telephone,owner_email)
     return RightResponse(result)
+
+def querySchoolAdministrator(request):
+    pass
+
+def updateSchoolAdministrator(request):
+    pass
+
+def deleteSchoolAdministrator(request):
+    pass
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def createSchool(request):
     r,out = checkNecessaryParams(request,'province','city','district','telephone','school_name','address')
@@ -219,7 +232,7 @@ def createSchool(request):
     except DoesNotExist,e:
 	errorMsg='the current user is not a school administrator,only school administrators can create school'
 	return InvalidUrl(errorMsg)
-    school = School(address = out['address'],name = out['school_name'])
+    school = School(address = out['address'],name = out['school_name'],status='EI')
     school.save()
     try:
 	district.add(school)
@@ -228,8 +241,20 @@ def createSchool(request):
 	errorMsg = 'can not add the current school to %s or %s' % (district.name,sa.name)
 	return InvalidUrl(errorMsg)
 	
-    result = '成功注册学校:%s 责任人名字:%s 地区:%s' % (out['school_name'],sa.name,district.name)
+    result = '成功注册学校:%s 责任人名字:%s 地区:%s,状态审核中,我们将尽快完成对该学校合法性的审核' % (out['school_name'],sa.name,district.name)
+    #后台人员审核通过之后将学校状态置为审核通过
     return RightResponse(result)
+
+def updateSchool(request):
+    pass
+
+def querySchool(request):
+    pass
+
+def deleteSchool(request):
+    pass
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def createClass(request):
     r,out = checkNecessaryParams(request,'province','city','district','telephone','school_name','name')
@@ -260,6 +285,18 @@ def createClass(request):
     school.save()	
     result = '成功创建班级:%s 学校:%s 学校负责人:%s' % (out['name'],out['school_name'],sa.name)
     return RightResponse(result)
+
+def updateClass(request):
+    pass
+
+def queryClass(request):
+    pass
+
+def deleteClass(request):
+    pass
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def registerTeacher(request):
     #假设同一个区域的学校名字不重复
@@ -311,9 +348,19 @@ def OnRejectTeacherRegister(request):
    #从数据库中删除该教师信息 
    pass
 
-def UpdateTeacherInfo(requst):
+def UpdateTeacher(requst):
     #更新教师个人信息
     #将request中教师的信息与数据库中的信息逐个做比较，更新有差异的条目
+    pass
+
+def queryTeacher(request):
+    pass
+
+def deleteTeacher(request):
+    pass
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def createKid(request):
     #假设同一个区域的学校名字不重复
@@ -330,6 +377,9 @@ def queryKid(request):
 def deleteKid(request):
     #删除kid
     pass
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def registerParents(request):
     #注册家长
